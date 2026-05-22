@@ -10,6 +10,7 @@ import ordersRouter from "./routes/orders.js";
 import paymentsRouter from "./routes/payments.js";
 import staffRouter from "./routes/staff.js";
 import statusRouter from "./routes/status.js";
+import measurementsRouter from "./routes/measurements.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/staff", staffRouter);
+app.use("/api/measurements", measurementsRouter);
 app.use("/api/status", statusRouter);
 
 app.get("/api/health", (_req, res) => {
