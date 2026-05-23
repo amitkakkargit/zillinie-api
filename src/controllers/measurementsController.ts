@@ -21,3 +21,13 @@ export async function getMeasurementDetails(req: Request, res: Response) {
     res.status(500).json({ error: "Failed to fetch measurement details." });
   }
 }
+
+export async function getMeasurementList(_req: Request, res: Response) {
+  try {
+    const list = await measurementService.getMeasurementList();
+    res.json(list);
+  } catch (error) {
+    console.error("Failed to fetch measurement list", error);
+    res.status(500).json({ error: "Failed to fetch measurement list." });
+  }
+}

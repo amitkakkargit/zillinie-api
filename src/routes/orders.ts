@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get("/", ordersController.getOrders);
 router.get("/:orderNumber", ordersController.getOrder);
+router.post("/", ordersController.createOrder);
 
 export default router;

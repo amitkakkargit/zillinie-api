@@ -8,3 +8,7 @@ export async function saveMeasurement(data: MeasurementData) {
 export async function getMeasurementDetails(orderNumber: string) {
   return measurementRepo.fetchMeasurementDetails(orderNumber);
 }
+
+export async function getMeasurementList() {
+  return measurementRepo.fetchMeasurementList();
+}

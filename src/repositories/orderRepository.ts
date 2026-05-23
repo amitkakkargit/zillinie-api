@@ -1,5 +1,5 @@
 import sql from "mssql";
-import { executeProcedure } from "../db.js";
+import { executeProcedure, getPool, isUsingMockDb } from "../db.js";
 
 export async function getOrderList(searchTerm = "") {
   const result = await executeProcedure("Proc_GetProductDetailsCustomerWise", [
@@ -15,4 +15,55 @@ export async function getOrderByNumber(orderNumber: string) {
     { name: "OrderNumber", type: sql.VarChar(100), value: orderNumber },
   ]);
   return result.recordset ?? [];
+}
+
+export async function createOrder(data: any) {
+  // data: { customerId, items: [{ productId, quantity, price }], total }
+  if (isUsingMockDb()) {
+    const fakeId = Date.now();
+    const fakeNumber = `MOCK-${fakeId}`;
+    return {
+      orderId: fakeId,
+      orderNumber: fakeNumber,
+      balance: data.total ?? 0,
+    };
+  }
+
+  const pool = await getPool();
+  // create order and order items inside a transaction
+  const tx = new sql.Transaction(pool);
+  await tx.begin();
+  try {
+    const request = tx.request();
+    const orderNumber = `ORD-${Date.now()}`;
+    const insertOrderResult = await request
+      .input("CustomerID", sql.Int, data.customerId ?? 0)
+      .input("TotalAmount", sql.Decimal(18, 2), data.total ?? 0)
+      .input("OrderNumber", sql.VarChar(100), orderNumber)
+      .query(
+        "INSERT INTO Orders (CustomerID, TotalAmount, OrderNumber) OUTPUT inserted.OrderID VALUES (@CustomerID, @TotalAmount, @OrderNumber)",
+      );
+
+    const newOrderId = insertOrderResult.recordset?.[0]?.OrderID ?? null;
+
+    if (newOrderId && Array.isArray(data.items)) {
+      for (const it of data.items) {
+        await tx
+          .request()
+          .input("OrderID", sql.Int, newOrderId)
+          .input("ProductID", sql.Int, it.productId)
+          .input("Quantity", sql.Int, it.quantity)
+          .input("UnitPrice", sql.Decimal(18, 2), it.price)
+          .query(
+            "INSERT INTO OrderItems (OrderID, ProductID, Quantity, UnitPrice) VALUES (@OrderID, @ProductID, @Quantity, @UnitPrice)",
+          );
+      }
+    }
+
+    await tx.commit();
+    return { orderId: newOrderId, orderNumber };
+  } catch (err) {
+    await tx.rollback();
+    throw err;
+  }
 }

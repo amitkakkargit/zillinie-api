@@ -1,5 +1,5 @@
 import sql from "mssql";
-import config from "../config.js";
+import { executeProcedure, isUsingMockDb } from "../db.js";
 
 export interface UserRecord {
   id: number;
@@ -11,15 +11,18 @@ export async function findUserByCredentials(
   username: string,
   password: string,
 ): Promise<UserRecord | null> {
-  const pool = await sql.connect(config.db);
-  const result = await pool
-    .request()
-    .input("Username", sql.VarChar(100), username)
-    .input("Password", sql.VarChar(100), password)
-    .execute("Proc_ValidateUser");
+  // Use stored procedure via executeProcedure; falls back to mock when DB unavailable
+  const result = await executeProcedure("Proc_ValidateUser", [
+    { name: "Username", type: sql.VarChar(100), value: username },
+    { name: "Password", type: sql.VarChar(100), value: password },
+  ]);
 
   const row = result.recordset?.[0];
   if (!row) {
+    if (isUsingMockDb()) {
+      // return a fake user in dev mode so login flows can be exercised
+      return { id: 1, username, name: username };
+    }
     return null;
   }
 

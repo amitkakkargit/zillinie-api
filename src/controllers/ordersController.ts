@@ -12,3 +12,9 @@ export async function getOrder(req: Request, res: Response) {
   const order = await orderService.getOrder(orderNumber);
   res.json(order);
 }
+
+export async function createOrder(req: Request, res: Response) {
+  const data = req.body;
+  const created = await orderService.createOrder(data);
+  res.json(created);
+}

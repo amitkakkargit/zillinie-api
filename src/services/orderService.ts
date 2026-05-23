@@ -7,3 +7,7 @@ export async function listOrders(searchTerm = "") {
 export async function getOrder(orderNumber: string) {
   return orderRepo.getOrderByNumber(orderNumber);
 }
+
+export async function createOrder(data: any) {
+  return orderRepo.createOrder(data);
+}
