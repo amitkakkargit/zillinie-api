@@ -11,6 +11,7 @@ import paymentsRouter from "./routes/payments.js";
 import staffRouter from "./routes/staff.js";
 import statusRouter from "./routes/status.js";
 import measurementsRouter from "./routes/measurements.js";
+import ocrRouter from "./routes/ocr.js";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/api/payments", paymentsRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/measurements", measurementsRouter);
 app.use("/api/status", statusRouter);
+app.use("/api/ocr", ocrRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

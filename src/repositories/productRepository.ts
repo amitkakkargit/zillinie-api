@@ -121,3 +121,72 @@ export async function deductStock(args: {
   ]);
   return result.recordset ?? [];
 }
+
+export async function getProductHistory(productId: string) {
+  if (isUsingMockDb()) {
+    return [
+      { ProductId: productId, StatusName: "Received", UpdatedAt: new Date().toISOString(), Remarks: "Mock history" },
+      { ProductId: productId, StatusName: "In Progress", UpdatedAt: new Date().toISOString(), Remarks: "Mock history" },
+    ];
+  }
+
+  const result = await executeProcedure("Proc_GetProductHistory", [
+    { name: "ProductId", type: sql.VarChar(100), value: productId },
+  ]);
+  return result.recordset ?? [];
+}
+
+export async function getProductListByOrderNumber(orderNumber: string) {
+  if (isUsingMockDb()) {
+    return [
+      { ProductId: "1", ProductName: "Mock Shirt", OrderNumber: orderNumber },
+    ];
+  }
+
+  const result = await executeProcedure("Proc_GetProductListByOrderNumber", [
+    { name: "OrderNumber", type: sql.VarChar(100), value: orderNumber },
+  ]);
+  return result.recordset ?? [];
+}
+
+export async function getProductByQRCode(qrCode: string) {
+  if (isUsingMockDb()) {
+    return {
+      ProductId: 1,
+      ProductName: "Mock Shirt",
+      CategoryName: "Clothing",
+      SubCategoryName: "Shirts",
+      Size: "M",
+      Color: "White",
+      Price: 150,
+      StockQuantity: 30,
+      Description: "Mock product",
+    };
+  }
+
+  const result = await executeProcedure("sp_GetProductByQRCode", [
+    { name: "QRCode", type: sql.VarChar(500), value: qrCode },
+  ]);
+  return result.recordset?.[0] ?? null;
+}
+
+export async function updateStockQuantity(args: {
+  ProductId: number;
+  Quantity: number;
+  TransactionType: string;
+  Remarks: string;
+  CreatedBy: string;
+}) {
+  if (isUsingMockDb()) {
+    return true;
+  }
+
+  await executeProcedure("sp_UpdateStockQuantity", [
+    { name: "ProductId", type: sql.Int, value: args.ProductId },
+    { name: "Quantity", type: sql.Int, value: args.Quantity },
+    { name: "TransactionType", type: sql.VarChar(50), value: args.TransactionType },
+    { name: "Remarks", type: sql.VarChar(500), value: args.Remarks },
+    { name: "CreatedBy", type: sql.VarChar(100), value: args.CreatedBy },
+  ]);
+  return true;
+}
