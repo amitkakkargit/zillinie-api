@@ -127,7 +127,7 @@ export async function fetchMeasurementList() {
   } catch (err) {
     console.warn(
       "Measurement list proc missing or failed, returning empty list",
-      err?.message ?? err,
+      err instanceof Error ? err.message : String(err),
     );
     return [];
   }

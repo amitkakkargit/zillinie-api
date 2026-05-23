@@ -14,9 +14,7 @@ export async function authenticate(
 
   // create a session token for this user; invalidate previous
   const token = createSessionForUser(
-    String(
-      user.Username ?? user.username ?? user.UserName ?? user.UserId ?? "user",
-    ),
+    user.username ?? user.name ?? String(user.id ?? "user"),
   );
 
   return { ...user, sessionToken: token };

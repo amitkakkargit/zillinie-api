@@ -40,7 +40,7 @@ export async function getPool(): Promise<sql.ConnectionPool> {
   } catch (err) {
     console.warn(
       "Could not connect to SQL Server — enabling DB mock fallback:",
-      err?.message ?? err,
+      err instanceof Error ? err.message : String(err),
     );
     pool = new MockPool() as unknown as sql.ConnectionPool;
     usingMock = true;
