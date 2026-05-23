@@ -118,3 +118,17 @@ export async function fetchMeasurementDetails(orderNumber: string) {
 
   return result.recordset ?? [];
 }
+
+export async function fetchMeasurementList() {
+  // Attempt to call a stored procedure if present; fallback to empty list in dev
+  try {
+    const result = await executeProcedure("Proc_GetMeasurementList", []);
+    return result.recordset ?? [];
+  } catch (err) {
+    console.warn(
+      "Measurement list proc missing or failed, returning empty list",
+      err?.message ?? err,
+    );
+    return [];
+  }
+}
