@@ -1,5 +1,5 @@
 import sql from "mssql";
-import config from "../config.js";
+import { getPool } from "../db.js";
 
 export interface CustomerRecord {
   id: number;
@@ -9,7 +9,7 @@ export interface CustomerRecord {
 }
 
 export async function fetchCustomerList(): Promise<CustomerRecord[]> {
-  const pool = await sql.connect(config.db);
+  const pool = await getPool();
   const result = await pool.request().execute("Proc_GetCustomerList");
   const rows = result.recordset ?? [];
 

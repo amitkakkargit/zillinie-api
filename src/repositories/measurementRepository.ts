@@ -1,5 +1,5 @@
 import sql from "mssql";
-import { executeProcedure } from "../db.js";
+import { executeProcedure, isUsingMockDb } from "../db.js";
 
 export interface MeasurementData {
   orderNumber: number;
@@ -36,6 +36,18 @@ export interface MeasurementData {
 }
 
 export async function saveMeasurement(data: MeasurementData) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        MeasurementId: Date.now(),
+        ...data,
+        MeasurementDate: data.measurementDate ?? new Date().toISOString(),
+        TrialDate: data.trialDate ?? null,
+        DeliveryDate: data.deliveryDate ?? null,
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_SaveMeasurementData", [
     {
       name: "ProductType",
@@ -107,6 +119,40 @@ export async function saveMeasurement(data: MeasurementData) {
 }
 
 export async function fetchMeasurementDetails(orderNumber: string) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        OrderNumber: orderNumber,
+        ProductType: "Mock Tailoring",
+        MeasurementTakenBy: 1,
+        CustomerId: 1,
+        CustomerName: "Mock Customer",
+        TrialDate: new Date().toISOString(),
+        DeliveryDate: new Date().toISOString(),
+        Length_U: "40",
+        Chest_U: "38",
+        Waist_U: "34",
+        Hip_U: "39",
+        Shoulder_U: "16",
+        Sleeve_U: "24",
+        Neck_U: "15",
+        Cuff_U: "8",
+        Bicep_U: "13",
+        Wrist_U: "7",
+        Length_L: "42",
+        Waist_L: "34",
+        Hip_L: "39",
+        Front_L: "10",
+        AllRound_L: "40",
+        Thigh_L: "22",
+        Bottom_L: "16",
+        Knee_L: "14",
+        Calf_L: "13",
+        Remarks: "Mock measurement record",
+      },
+    ];
+  }
+
   const result = await executeProcedure(
     "Proc_GetMeasurementDetailsByOrderNumber",
     [
@@ -120,7 +166,31 @@ export async function fetchMeasurementDetails(orderNumber: string) {
 }
 
 export async function fetchMeasurementList() {
-  // Attempt to call a stored procedure if present; fallback to empty list in dev
+  if (isUsingMockDb()) {
+    return [
+      {
+        MeasurementId: 1,
+        OrderNumber: 1001,
+        ProductType: "Shirt",
+        CustomerName: "Mock Customer",
+        TotalAmount: 120.0,
+        AdvanceAmount: 50.0,
+        RemainingAmount: 70.0,
+        MeasurementDate: new Date().toISOString(),
+      },
+      {
+        MeasurementId: 2,
+        OrderNumber: 1002,
+        ProductType: "Suit",
+        CustomerName: "Sample Customer",
+        TotalAmount: 250.0,
+        AdvanceAmount: 100.0,
+        RemainingAmount: 150.0,
+        MeasurementDate: new Date().toISOString(),
+      },
+    ];
+  }
+
   try {
     const result = await executeProcedure("Proc_GetMeasurementList", []);
     return result.recordset ?? [];

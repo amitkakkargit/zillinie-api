@@ -7,7 +7,11 @@ export function sessionMiddleware(
   next: NextFunction,
 ) {
   // Allow unauthenticated access to auth and health endpoints
-  if (req.path.startsWith("/auth") || req.path === "/health") {
+  if (
+    req.method === "OPTIONS" ||
+    req.path.startsWith("/auth") ||
+    req.path === "/health"
+  ) {
     return next();
   }
 

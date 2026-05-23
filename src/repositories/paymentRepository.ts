@@ -1,7 +1,18 @@
 import sql from "mssql";
-import { getPool } from "../db.js";
+import { getPool, isUsingMockDb } from "../db.js";
 
 export async function getPaymentsByOrder(orderId: number) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        PaymentID: 1,
+        OrderID: orderId,
+        PaymentDate: new Date().toISOString(),
+        AmountPaid: 0,
+      },
+    ];
+  }
+
   const pool = await getPool();
   const result = await pool
     .request()
@@ -14,6 +25,14 @@ export async function getPaymentsByOrder(orderId: number) {
 }
 
 export async function getOrderBalance(orderId: number) {
+  if (isUsingMockDb()) {
+    return {
+      OrderID: orderId,
+      TotalAmount: 120.0,
+      RemainingAmount: 120.0,
+    };
+  }
+
   const pool = await getPool();
   const result = await pool
     .request()
@@ -26,6 +45,14 @@ export async function getOrderBalance(orderId: number) {
 }
 
 export async function savePayment(orderId: number, amountPaid: number) {
+  if (isUsingMockDb()) {
+    return {
+      OrderID: orderId,
+      TotalAmount: 120.0,
+      RemainingAmount: 120.0 - amountPaid,
+    };
+  }
+
   const pool = await getPool();
   await pool
     .request()

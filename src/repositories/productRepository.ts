@@ -1,7 +1,32 @@
 import sql from "mssql";
-import { executeProcedure } from "../db.js";
+import { executeProcedure, isUsingMockDb } from "../db.js";
+
+const mockProducts = [
+  {
+    ProductID: 1,
+    ProductName: "Mock Shirt",
+    Unit: "pcs",
+    PurchaseRate: 100.0,
+    SaleRate: 150.0,
+    CurrentStock: 30,
+    Remarks: "Mock product",
+  },
+  {
+    ProductID: 2,
+    ProductName: "Mock Suit",
+    Unit: "pcs",
+    PurchaseRate: 500.0,
+    SaleRate: 700.0,
+    CurrentStock: 15,
+    Remarks: "Mock product",
+  },
+];
 
 export async function getProducts() {
+  if (isUsingMockDb()) {
+    return mockProducts;
+  }
+
   const result = await executeProcedure("Proc_GetProducts");
   return result.recordset ?? [];
 }
@@ -17,6 +42,21 @@ export async function saveProduct(details: {
   ProductID?: number;
   dbQrPath?: string;
 }) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        ProductID: details.ProductID || Date.now(),
+        SubcategoryID: details.SubcategoryID,
+        ProductName: details.ProductName,
+        Unit: details.Unit,
+        PurchaseRate: details.PurchaseRate,
+        SaleRate: details.SaleRate,
+        CurrentStock: details.NewStock,
+        Remarks: details.Remarks ?? "",
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_SaveProductDetails", [
     { name: "SubcategoryID", type: sql.Int, value: details.SubcategoryID },
     { name: "ProductName", type: sql.VarChar(250), value: details.ProductName },
@@ -37,6 +77,18 @@ export async function saveProduct(details: {
 }
 
 export async function getStockDetails(productId: number) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        ProductID: productId,
+        StockDate: new Date().toISOString(),
+        AvailableQuantity: 42,
+        UsedQuantity: 0,
+        Remarks: "Mock stock details",
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_GetProductStockDetails", [
     { name: "ProductID", type: sql.Int, value: productId },
   ]);
@@ -49,6 +101,18 @@ export async function deductStock(args: {
   OrderNumber: string;
   CreatedBy: string;
 }) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        ProductID: args.ProductID,
+        OrderNumber: args.OrderNumber,
+        UsedQuantity: args.UsedQuantity,
+        RemainingStock: Math.max(0, 42 - args.UsedQuantity),
+        Remarks: "Mock stock deduction",
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_UseStock", [
     { name: "ProductID", type: sql.Int, value: args.ProductID },
     { name: "UsedQuantity", type: sql.Int, value: args.UsedQuantity },

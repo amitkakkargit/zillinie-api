@@ -17,11 +17,6 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT ?? "4000";
 
-import sessionMiddleware from "./middleware/sessionMiddleware.js";
-
-// apply session middleware for API routes (auth and health are allowed through)
-app.use("/api", sessionMiddleware);
-
 app.use(
   cors({
     origin: process.env.FRONTEND_URL ?? "http://localhost:5173",
@@ -29,6 +24,11 @@ app.use(
   }),
 );
 app.use(express.json());
+
+import sessionMiddleware from "./middleware/sessionMiddleware.js";
+
+// apply session middleware for API routes (auth and health are allowed through)
+app.use("/api", sessionMiddleware);
 
 app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);

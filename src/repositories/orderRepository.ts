@@ -2,6 +2,19 @@ import sql from "mssql";
 import { executeProcedure, getPool, isUsingMockDb } from "../db.js";
 
 export async function getOrderList(searchTerm = "") {
+  if (isUsingMockDb()) {
+    return [
+      {
+        OrderId: 1,
+        OrderNumber: "MOCK-1001",
+        CustomerName: "Mock Customer",
+        TotalAmount: 120.0,
+        RemainingAmount: 120.0,
+        CreatedDate: new Date().toISOString(),
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_GetProductDetailsCustomerWise", [
     { name: "SearchTerm", type: sql.VarChar(250), value: searchTerm },
     { name: "TrialDate", type: sql.VarChar(50), value: "" },
@@ -11,6 +24,22 @@ export async function getOrderList(searchTerm = "") {
 }
 
 export async function getOrderByNumber(orderNumber: string) {
+  if (isUsingMockDb()) {
+    return [
+      {
+        OrderId: 1,
+        OrderNumber: orderNumber,
+        CustomerName: "Mock Customer",
+        OrderDate: new Date().toISOString(),
+        Quantity: 1,
+        ProductName: "Mock Tailoring Item",
+        UnitPrice: 120.0,
+        TotalAmount: 120.0,
+        RemainingAmount: 120.0,
+      },
+    ];
+  }
+
   const result = await executeProcedure("Proc_GetProductListByOrderNumber", [
     { name: "OrderNumber", type: sql.VarChar(100), value: orderNumber },
   ]);
